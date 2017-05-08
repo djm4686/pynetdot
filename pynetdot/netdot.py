@@ -81,7 +81,15 @@ class Netdot(object):
             return []
         if not response.ok:
             response.raise_for_status()
-        return response.content
+        if "pure_xml" in kwargs and kwargs["pure_xml"]:
+            return response.content
+        xml = parse_xml(response.content)
+        results = []
+        for c in xml:
+            obj = cls(id=c.attrib['id'])
+            cls._from_netdot(obj, c.attrib)
+            results.append(obj)
+        return results
 
     @classmethod
     def get_first(cls, **kwargs):
